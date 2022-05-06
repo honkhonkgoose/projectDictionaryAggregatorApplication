@@ -63,7 +63,7 @@ public class AggregatorService {
             String reverse = new StringBuilder(word).reverse()
                     .toString();
             if (word.equals(reverse)) {
-                results.add(restClient.getDefinitionFor(word));
+                results.add(candidates.get(i));
             }
         }
 
