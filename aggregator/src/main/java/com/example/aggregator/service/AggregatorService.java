@@ -43,34 +43,31 @@ public class AggregatorService {
 
         final List<Entry> candidates = new ArrayList<>();
 
-        // Iterate from a to z
-        IntStream.range('a', '{')
-                .mapToObj(i -> Character.toString(i))
-                .forEach(c -> {
+        for (char alphabet = 'a'; alphabet <= 'z'; alphabet++) {
+            // get words starting and ending with character
+            List<Entry> startsWith = restClient.getWordsStartingWith(String.valueOf(alphabet));
+            List<Entry> endsWith = restClient.getWordsEndingWith(String.valueOf(alphabet));
 
-                    // get words starting and ending with character
-                    List<Entry> startsWith = restClient.getWordsStartingWith(c);
-                    List<Entry> endsWith = restClient.getWordsEndingWith(c);
+            // keep entries that exist in both lists
+            List<Entry> startsAndEndsWith = new ArrayList<>(startsWith);
+            startsAndEndsWith.retainAll(endsWith);
 
-                    // keep entries that exist in both lists
-                    List<Entry> startsAndEndsWith = new ArrayList<>(startsWith);
-                    startsAndEndsWith.retainAll(endsWith);
+            // store list with existing entries
+            candidates.addAll(startsAndEndsWith);
+        }
 
-                    // store list with existing entries
-                    candidates.addAll(startsAndEndsWith);
+        final List<Entry> results = new ArrayList<>();
 
-                });
+        for (int i = 0; i < candidates.size(); i++) {
+            String word = candidates.get(i).getWord();
+            String reverse = new StringBuilder(word).reverse()
+                    .toString();
+            if (word.equals(reverse)) {
+                results.add(restClient.getDefinitionFor(word));
+            }
+        }
 
-        // test each entry for palindrome, sort and return
-        return candidates.stream()
-                .filter(entry -> {
-                    String word = entry.getWord();
-                    String reverse = new StringBuilder(word).reverse()
-                            .toString();
-                    return word.equals(reverse);
-                })
-                .sorted()
-                .collect(Collectors.toList());
+        return results;
+
     }
-
 }
